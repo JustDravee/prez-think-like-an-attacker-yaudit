@@ -24,6 +24,26 @@
 					</script>
 				</section>
 
+				<!-- ══════════════════ WHOAMI ══════════════════ -->
+				<section data-markdown>
+					<script type="text/template">
+						## WHOAMI ?
+
+						- Known as Dravee
+						- Started Web3 Security from [Secureum](https://www.secureum.xyz/) Epoch 0 in 2021
+						- Did some contests/judging on Code4rena (RIP) (Ranked #23 globally on the 2022 Leaderboard.)
+						- Joined Spearbit as SR in 2022
+						- Joined Certora in 2023 for 3 years (became a Team Leader in the last year)
+						- Currently back to being an Independant SR, mainly auditing for Zenith 
+						- Maintaining a [blog](https://justdravee.github.io/)
+						- Gave some talks on podcasts, best work being [Mindsets of Auditing — OpenSense](https://youtu.be/kORcOhftwVw?si=TpvTqXCW5OoZN8mP)
+						- yAcademy alumni (block 4)
+
+						![pfp](./pfp.png) <!-- .element height="15%" width="15%" -->
+
+					</script>
+				</section>
+
 				<!-- ══════════════════ TABLE OF CONTENTS ══════════════════ -->
 				<section data-markdown>
 					<script type="text/template" >
@@ -67,7 +87,7 @@
 
 					<section data-markdown>
 						<script type="text/template">
-							## What's even a bug? (1/2)
+							## What's even a bug? (1/3)
 
 							![3 levels of bugs meme](./levelsbugs.jpg)
 						</script>
@@ -75,13 +95,23 @@
 
 					<section data-markdown>
 						<script type="text/template">
-							## What's even a bug? (2/2)
+							## What's even a bug? (2/3)
 
 							**1. Pattern Matching** — "We've seen this before." Static analysis/AI catch these reliably.
 
 							**2. Dev Mistakes / Correctness issues** — Unit tests *should* catch these (if they exist). "Do the happy paths even work?". "Do all happy paths even exist?"
 
-							**3. Broken Assumptions** — This is where AI struggles (by itself) and where creativity and exploration skills matter. They require an attacker mindset challenging "truths" and "limitations" the protocol tries to make you believe in.
+							![](./intentmore.png)<!-- .element height="25%" width="25%" -->
+							![](./intentmismatch.png)<!-- .element height="25%" width="25%" -->
+							
+							---
+							
+							## What's even a bug? (3/3)
+							
+							**3. Broken Assumptions** — This is where AI struggles (by itself) and where creativity and exploration skills matter. They require an attacker mindset **challenging "truths" and "limitations"** the protocol tries to **make you believe** in.
+							
+							![](./toomanypaths.png)<!-- .element height="20%" width="20%" -->
+
 
 							*Every exploit reduces to: "A **certain user** did a **certain sequence of calldatas** (data flow) at a **certain initial global state** (preconditions) at a **certain timing** (temporality) which took a **certain code path** (control flow) having an **unintendedly profitable behavior** (funds extraction)"*
 						</script>
@@ -118,7 +148,7 @@
 
 							You don't enumerate. You **bound the search**.
 
-							How? Start **from the end** with a **concrete goal** and keep asking **What do I need to make this happen?** until the code breaks.
+							How? Start **from the end** with a **concrete goal** and keep asking "**What do" I need to make this happen?**" until the code breaks.
 
 							![](./drake-start-end.jpg)<!-- .element height="20%" width="20%" -->
 
@@ -592,7 +622,10 @@
 
 						*Build attack trees. Question everything until the code breaks.*
 
+						![pfp](./pfp.png) <!-- .element height="10%" width="10%" -->
+
 						***Thank you for your attention!***
+
 					</script>
 				</section>
 
