@@ -185,7 +185,7 @@ var _ = /android/gi.test(h), v = function(e) {
 	}
 }(typeof window > "u" ? null : window);
 //#endregion
-//#region \0@oxc-project+runtime@0.146.0/helpers/esm/typeof.js
+//#region \0@oxc-project+runtime@0.153.0/helpers/esm/typeof.js
 function y(e) {
 	"@babel/helpers - typeof";
 	return y = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -195,7 +195,7 @@ function y(e) {
 	}, y(e);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.146.0/helpers/esm/toPrimitive.js
+//#region \0@oxc-project+runtime@0.153.0/helpers/esm/toPrimitive.js
 function b(e, t) {
 	if (y(e) != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
@@ -207,13 +207,13 @@ function b(e, t) {
 	return (t === "string" ? String : Number)(e);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.146.0/helpers/esm/toPropertyKey.js
+//#region \0@oxc-project+runtime@0.153.0/helpers/esm/toPropertyKey.js
 function x(e) {
 	var t = b(e, "string");
 	return y(t) == "symbol" ? t : t + "";
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.146.0/helpers/esm/defineProperty.js
+//#region \0@oxc-project+runtime@0.153.0/helpers/esm/defineProperty.js
 function S(e, t, n) {
 	return (t = x(t)) in e ? Object.defineProperty(e, t, {
 		value: n,
@@ -328,9 +328,9 @@ var ee = class {
 					e.readyState > 1 ? this.startEmbeddedMedia({ target: e }) : g ? (e.addEventListener("canplay", this.ensureMobileMediaPlaying), this.playMediaElement(e)) : (e.removeEventListener("loadeddata", this.startEmbeddedMedia), e.addEventListener("loadeddata", this.startEmbeddedMedia));
 				}
 			}), n || (t(e, "iframe[src]").forEach((e) => {
-				o(e, ".fragment") && !o(e, ".fragment.visible") || this.startEmbeddedIframe({ target: e });
+				(!o(e, ".fragment") || o(e, ".fragment.visible")) && this.startEmbeddedIframe({ target: e });
 			}), t(e, "iframe[data-src]").forEach((e) => {
-				o(e, ".fragment") && !o(e, ".fragment.visible") || e.getAttribute("src") !== e.getAttribute("data-src") && (e.removeEventListener("load", this.startEmbeddedIframe), e.addEventListener("load", this.startEmbeddedIframe), e.setAttribute("src", e.getAttribute("data-src")));
+				(!o(e, ".fragment") || o(e, ".fragment.visible")) && e.getAttribute("src") !== e.getAttribute("data-src") && (e.removeEventListener("load", this.startEmbeddedIframe), e.addEventListener("load", this.startEmbeddedIframe), e.setAttribute("src", e.getAttribute("data-src")));
 			}));
 		}
 	}
@@ -595,7 +595,7 @@ var ee = class {
 			backgroundTransition: e.getAttribute("data-background-transition"),
 			backgroundOpacity: e.getAttribute("data-background-opacity")
 		}, i = e.hasAttribute("data-preload");
-		e.classList.remove("has-dark-background"), e.classList.remove("has-light-background"), t.removeAttribute("data-loaded"), t.removeAttribute("data-background-hash"), t.removeAttribute("data-background-size"), t.removeAttribute("data-background-transition"), t.style.backgroundColor = "", n.style.backgroundSize = "", n.style.backgroundRepeat = "", n.style.backgroundPosition = "", n.style.backgroundImage = "", n.style.opacity = "", n.innerHTML = "", r.background && (/^(http|file|\/\/)/gi.test(r.background) || /\.(svg|png|jpg|jpeg|gif|bmp|webp)([?#\s]|$)/gi.test(r.background) ? e.setAttribute("data-background-image", r.background) : t.style.background = r.background), (r.background || r.backgroundColor || r.backgroundGradient || r.backgroundImage || r.backgroundVideo || r.backgroundIframe) && t.setAttribute("data-background-hash", r.background + r.backgroundSize + r.backgroundImage + r.backgroundVideo + r.backgroundIframe + r.backgroundColor + r.backgroundGradient + r.backgroundRepeat + r.backgroundPosition + r.backgroundTransition + r.backgroundOpacity), r.backgroundSize && t.setAttribute("data-background-size", r.backgroundSize), r.backgroundColor && (t.style.backgroundColor = r.backgroundColor), r.backgroundGradient && (t.style.backgroundImage = r.backgroundGradient), r.backgroundTransition && t.setAttribute("data-background-transition", r.backgroundTransition), i && t.setAttribute("data-preload", ""), r.backgroundSize && (n.style.backgroundSize = r.backgroundSize), r.backgroundRepeat && (n.style.backgroundRepeat = r.backgroundRepeat), r.backgroundPosition && (n.style.backgroundPosition = r.backgroundPosition), r.backgroundOpacity && (n.style.opacity = r.backgroundOpacity);
+		e.classList.remove("has-dark-background"), e.classList.remove("has-light-background"), t.removeAttribute("data-loaded"), t.removeAttribute("data-background-hash"), t.removeAttribute("data-background-size"), t.removeAttribute("data-background-transition"), t.style.backgroundColor = "", t.style.backgroundImage = "", n.style.backgroundSize = "", n.style.backgroundRepeat = "", n.style.backgroundPosition = "", n.style.backgroundImage = "", n.style.opacity = "", n.innerHTML = "", r.background && (/^(http|file|\/\/)/gi.test(r.background) || /\.(svg|png|jpg|jpeg|gif|bmp|webp)([?#\s]|$)/gi.test(r.background) ? e.setAttribute("data-background-image", r.background) : t.style.background = r.background), (r.background || r.backgroundColor || r.backgroundGradient || r.backgroundImage || r.backgroundVideo || r.backgroundIframe) && t.setAttribute("data-background-hash", r.background + r.backgroundSize + r.backgroundImage + r.backgroundVideo + r.backgroundIframe + r.backgroundColor + r.backgroundGradient + r.backgroundRepeat + r.backgroundPosition + r.backgroundTransition + r.backgroundOpacity), r.backgroundSize && t.setAttribute("data-background-size", r.backgroundSize), r.backgroundColor && (t.style.backgroundColor = r.backgroundColor), r.backgroundGradient && (t.style.backgroundImage = r.backgroundGradient), r.backgroundTransition && t.setAttribute("data-background-transition", r.backgroundTransition), i && t.setAttribute("data-preload", ""), r.backgroundSize && (n.style.backgroundSize = r.backgroundSize), r.backgroundRepeat && (n.style.backgroundRepeat = r.backgroundRepeat), r.backgroundPosition && (n.style.backgroundPosition = r.backgroundPosition), r.backgroundOpacity && (n.style.opacity = r.backgroundOpacity);
 		let a = this.getContrastClass(e);
 		typeof a == "string" && e.classList.add(a);
 	}
@@ -1063,7 +1063,7 @@ var ee = class {
 	}
 };
 //#endregion
-//#region \0@oxc-project+runtime@0.146.0/helpers/esm/asyncToGenerator.js
+//#region \0@oxc-project+runtime@0.153.0/helpers/esm/asyncToGenerator.js
 function j(e, t, n, r, i, a, o) {
 	try {
 		var s = e[a](o), c = s.value;
@@ -1446,7 +1446,7 @@ var ue = class {
 	}
 };
 //#endregion
-//#region \0@oxc-project+runtime@0.146.0/helpers/esm/objectSpread2.js
+//#region \0@oxc-project+runtime@0.153.0/helpers/esm/objectSpread2.js
 function N(e, t) {
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
@@ -2406,7 +2406,7 @@ function z(a, s) {
 		typeof e == "boolean" ? e ? Bt() : zt() : A ? Bt() : zt();
 	}
 	function pt() {
-		return !!(O && !A);
+		return !(!O || A);
 	}
 	function X(e, t, n, r) {
 		if (J({
@@ -2469,7 +2469,7 @@ function z(a, s) {
 		We(), Ue(), Y(), O = f.autoSlide, $(), F.create(), V.writeURL(), f.sortFragmentsOnSync === !0 && R.sortAll(), h !== void 0 && (h = bt(w, h), _ = bt(te, _)), H.update(), U.update(), Ct(), q.update(), q.updateVisibility(), G.update(), F.update(!0), M.update(), j.formatEmbeddedContent(), f.autoPlayMedia === !1 ? j.stopEmbeddedContent(y, { unloadIframes: !1 }) : j.startEmbeddedContent(y), z.isActive() && z.layout(), J({ type: "sync" });
 	}
 	function _t(e = y) {
-		F.sync(e), R.sync(e), j.load(e), F.update(), q.update(), J({
+		F.sync(e), R.sync(e), j.load(e), F.update(), q.update(), e === y && (j.startEmbeddedContent(e), e.slideBackgroundElement && j.startEmbeddedContent(e.slideBackgroundElement)), J({
 			type: "slidesync",
 			data: { slide: e }
 		});
@@ -2495,11 +2495,7 @@ function z(a, s) {
 			f.loop && (n >= i && (o = !0), n %= i, n < 0 && (n = i + n, s = !0)), n = Math.max(Math.min(n, i - 1), 0);
 			for (let e = 0; e < i; e++) {
 				let t = r[e], i = f.rtl && !nt(t);
-				if (t.classList.remove("past"), t.classList.remove("present"), t.classList.remove("future"), t.setAttribute("hidden", ""), t.setAttribute("aria-hidden", "true"), t.querySelector("section") && t.classList.add("stack"), a) {
-					t.classList.add("present");
-					continue;
-				}
-				e < n ? (t.classList.add(i ? "future" : "past"), f.fragments && xt(t)) : e > n ? (t.classList.add(i ? "past" : "future"), f.fragments && St(t)) : e === n && f.fragments && (o ? St(t) : s && xt(t));
+				t.classList.remove("past"), t.classList.remove("present"), t.classList.remove("future"), t.setAttribute("hidden", ""), t.setAttribute("aria-hidden", "true"), t.querySelector("section") && t.classList.add("stack"), a ? t.classList.add("present") : e < n ? (t.classList.add(i ? "future" : "past"), f.fragments && xt(t)) : e > n ? (t.classList.add(i ? "past" : "future"), f.fragments && St(t)) : e === n && f.fragments && (o ? St(t) : s && xt(t));
 			}
 			let e = r[n], t = e.classList.contains("present");
 			e.classList.add("present"), e.removeAttribute("hidden"), e.removeAttribute("aria-hidden"), t || J({
@@ -2541,7 +2537,7 @@ function z(a, s) {
 		}
 		let a = z.isActive() || I.isActive() || L.isActive();
 		t(D.wrapper, C).forEach((e) => {
-			e.toggleAttribute("inert", !a && e !== y && !e.contains(y));
+			!a && e !== y && !e.contains(y) ? e.setAttribute("inert", "") : e.removeAttribute("inert");
 		});
 	}
 	function Z({ includeFragments: e = !1 } = {}) {
