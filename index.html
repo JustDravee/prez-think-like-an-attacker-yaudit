@@ -2,25 +2,600 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-		/>
-
-		<title>reveal.js</title>
-
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<title>Thinking Like an Attacker — Dravee @ yAudit</title>
 		<link rel="stylesheet" href="dist/reset.css" />
 		<link rel="stylesheet" href="dist/reveal.css" />
 		<link rel="stylesheet" href="dist/theme/black.css" />
-
-		<!-- Theme used for syntax highlighted code -->
 		<link rel="stylesheet" href="dist/plugin/highlight/monokai.css" />
 	</head>
-	<body>
+	<body style="--r-main-font-size: 30px;">
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+
+				<!-- ══════════════════ TITLE ══════════════════ -->
+				<section data-markdown>
+					<script type="text/template">
+						# Thinking Like an Attacker
+
+						### A mental-model tour of the attacker's search space
+
+						**[Dravee](https://x.com/BowTiedDravee)**, guest speaker **[@yAudit](https://x.com/yAuditDAO)**
+					</script>
+				</section>
+
+				<!-- ══════════════════ TABLE OF CONTENTS ══════════════════ -->
+				<section data-markdown>
+					<script type="text/template" >
+						## Table of Contents
+
+						1. Why do devs and attackers read the same code but don't find the same bugs?
+						2. How to bound the search space?
+						3. What are the rules of the game we need to enforce?
+						4. How to make your spider sense tingle like that of a real auditor's?
+						5. Where does the money go, and who decides how much is yours?
+						6. Enough! I want Highs and Crits! Where do I start looking?
+						7. Why can't AI just do all this for us?
+					</script>
+				</section>
+
+				<!-- ══════════════════ SECTION 1 ══════════════════ -->
+				<section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## 1. Why do devs and attackers read the same code but don't find the same bugs?
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Devs and Attackers: 2 sides of the same coin
+
+							Reading the **same code**, but with a **different lens**.
+
+							|  | Developers | Attackers |
+							|---|-----------|-----------|
+							| **Focus** | Happy paths | Unhappy/Degenerate paths |
+							| **Goal** | Validate intended behavior | Explore the unintended behavior space |
+							| **Question** | "Does my feature work?" | "How could this break?" |
+							| **Assumption** | Users behave as intended | Intended behavior is just **a subset** of what the code can actually do |
+
+							*Intended behavior ≠ actual behavior space*
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## What's even a bug? (1/2)
+
+							![3 levels of bugs meme](./levelsbugs.jpg)
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## What's even a bug? (2/2)
+
+							**1. Pattern Matching** — "We've seen this before." Static analysis/AI catch these reliably.
+
+							**2. Dev Mistakes / Correctness issues** — Unit tests *should* catch these (if they exist). "Do the happy paths even work?". "Do all happy paths even exist?"
+
+							**3. Broken Assumptions** — This is where AI struggles (by itself) and where creativity and exploration skills matter. They require an attacker mindset challenging "truths" and "limitations" the protocol tries to make you believe in.
+
+							*Every exploit reduces to: "A **certain user** did a **certain sequence of calldatas** (data flow) at a **certain initial global state** (preconditions) at a **certain timing** (temporality) which took a **certain code path** (control flow) having an **unintendedly profitable behavior** (funds extraction)"*
+						</script>
+					</section>
+
+				</section>
+
+				<!-- ══════════════════ SECTION 2 ══════════════════ -->
+				<section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## 2. How to bound the search space?
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Can we enumerate all paths to find all bugs?
+
+							**No.**
+
+							We hit the [State explosion problem](https://link.springer.com/chapter/10.1007/3-540-65306-6_21) (also called [Combinatorial explosion](https://en.wikipedia.org/wiki/Combinatorial_explosion#Computing)) even on small non-trivial protocols.
+
+							Even Formal Verification times out often and needs harnesses and approximations.
+
+							> Few can truly appreciate how hard it is to build correct and secure software - 100proof
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## If it's impossible to enumerate every behavior, where do you even start?
+
+							You don't enumerate. You **bound the search**.
+
+							How? Start **from the end** with a **concrete goal** and keep asking **What do I need to make this happen?** until the code breaks.
+
+							![](./drake-start-end.jpg)<!-- .element height="20%" width="20%" -->
+
+							Attackers think **backwards**:
+							- Not: "does the intended functionality work?"
+							- But: "does an **unintended profitable path** exist?"
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Proposition: Attack Trees (1/4)
+
+							A famous method for testing is the Branching Tree Technique, which is even featured in the [Foundry docs](https://www.getfoundry.sh/guides/branching-tree-technique):
+
+							![BTT example 1](https://pbs.twimg.com/media/F1jlC3HXgAMlRZr?format=png&name=medium)<!-- .element height="40%" width="40%" -->
+							![BTT example 2](https://pbs.twimg.com/media/F1jlC3wXsAEhY8u?format=png&name=medium)<!-- .element height="40%" width="40%" -->
+
+							**Limitations:** aimless exploration, easily overwhelming, dev-oriented ("Does it work correctly?") — mainly a testing method.
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Proposition: Attack Trees (2/4)
+
+							[Attack trees](https://en.wikipedia.org/wiki/Attack_tree) have been around since the 80's.
+
+							They explore **backwards** from the goal, in contrast to BTT which explores forward.
+
+							![Open a safe — attack tree example](https://www.schneier.com/wp-content/uploads/2016/02/paper-attacktrees-fig2.gif)
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Proposition: Attack Trees (3/4)
+
+**This produces a usable artifact for brainstorming with others and AI.**
+
+1. **Sinks:** Start from a concrete goal (usually, "drain all funds", or "making funds leaving the protocol illegitimately").
+    - This usually starts in places where funds are leaving the system.
+	- They can also be areas of reverting code (for Grief/DOS vectors)
+	- Sinks are an end of execution
+2. **Taintable paths**: Walk backwards and dig assumptions
+    - keep asking "what do i need to make my goal happen?"
+    - keep asking "what is needed for this function to be safe"? ([Whitehatmage](https://x.com/WhiteHatMage)'s technique)
+    - "Can any path be tainted?"
+    - "Any areas of degenerate logic?"
+    - Any weird branches of logic?
+    - Challenge every "truth" that is unenforced by code and depends on "expectations" from users/other contracts/the ecosystem.
+						</script>
+					</section>
+	<section data-markdown>
+						<script type="text/template">
+	## Proposition: Attack Trees (4/4)
+
+	3. **Sources**: The attacker's entrypoints (the degrees of freedom). "What can they act on to influence outcomes?"
+		- Input parameters (calldata)
+		- Target contract's initial state (pre-manipulated storage or actual initial state)
+		- External contracts' initial state (can be interacted with directly?)
+		- Block context (block.*)
+		- User context (msg.*, roles, permissions)
+		- Timing (sequences, ordering).
+
+	***Cool Story:** 100proof earned a [1M$ bounty on Kyberswap](https://100proof.org/kyberswap-post-mortem.html). He spent **3 weeks on a single function** saying "If this can happen then rekt". He showed his fuzz test, it had to run around 2min consistently to find the edge case. He had a **concrete goal** and identified **what needed to happen** to reach it. He did wander aimlessly, reading the code and hoping for a bug to pop-up: he thoroughly explored a possibility he identified, with all the tools available.*
+						</script>
+					</section>
+
+				</section>
+
+				<!-- ══════════════════ SECTION 3 ══════════════════ -->
+				<section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## 3. What are the rules of the game we need to enforce?
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## State Space vs Behavior Space
+
+							**Chess Analogy**
+
+							| | Chess | Smart Contract |
+							|---|-------|----------------|
+							| **State space** | All positions that can ever occur | All possible variable combinations (incl. external deps) |
+							| **Behavior space** | All moves & effects | All call sequences and state transitions |
+							| **Invariants** | Constraints *no sequence of moves* should ever violate | Same, but with more complexity |
+
+							*Smart contracts are harder than chess: they live in an **adversarial environment** with **external dependencies** and are full of **assumptions***
+
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## State Space Safety: Invariant Checks
+
+							| Type | Example |
+							|------|---------|
+							| **Relational** | `totalSupply == sum(balances)` |
+							| **Range** | `fee <= MAX_FEE` |
+							| **Temporal / State Machine** | "Can only be called after XYZ" |
+							| **Reachability** | "This state must never be reachable" |
+							| **Monotonicity** | Value only increases |
+
+							*Once you identify a rule: check it's applied in **every place you expect it**. By hand. With stateful fuzzing. With formal verification. **Whatever: you must check it.***
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## The Euler Case: A Missing Invariant
+
+							A very small **donation** function, added after all audits, looking harmless, broke an invariant. The trap:
+
+							- Users could donate tokens to reserves, even until making their positions unhealthy
+							- Self-liquidation looks like a **loss** — money in, money out, same person.
+							- Unit tests think it's *intended behavior*.
+							- But **socialization of debt**, **asymmetry**, and **incentives** (discount) made it profitable.
+
+							*When adding a function: identify the state variables you're impacting and their relationship to other state variables. Here, the relational invariant is: “actions that reduce collateral, must pass health check”. And the broken invariant had an economic consequence.*
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Behavior Space Safety: Safety Properties (1/2)
+
+							I recommend reading [Certora's Lesson on type of properties](https://github.com/Certora/Tutorials/blob/master/06.Lesson_ThinkingProperties/Categorizing_Properties.pdf)
+
+							![certoraslide](./thinkprop.webp)<!-- .element height="60%" width="60%" -->
+
+							Unit tests ask: *"does the happy path produce the right output?"*. They verify behaviors.
+
+							Safety properties ask *“what is this function forbidden to do, regardless of who calls it, when, or with what?”*. **They bound behaviors**.
+						</script>
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+							## Behavior Space Safety: Safety Properties (2/2)
+
+							| Type | What you're bounding |
+							|------|----------------------|
+							| **Valid States** | Illegal states |
+							| **State Transitions** | Illegal changes in the state (Who/what/when is allowed to change the state what/when/for who?) |
+							| **Variable Transitions** | Specific variable evolutions |
+							| **High-Level Properties** | Consequences of sequences of actions |
+							| **Unit Tests** | Specific inputs |
+
+							*Reminder of first principles: A function can **Compute**, **Change state** variables (including external ones), **Return** values, **Pass**, **Revert**...That's all. Safety properties bound these.*
+						</script>
+					</section>
+
+				</section>
+
+				<!-- ══════════════════ SECTION 4 ══════════════════ -->
+				<section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## 4. How to make your spider sense tingle like that of a real auditor's?
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Uncover Assumptions
+
+							For every function — even every line — ask:
+
+							> **What is necessary for this to be secure?**
+							> **Is it enforced — or merely assumed?**
+
+							Assumptions = trust that actors behave cooperatively:
+							- Using the protocol **as intended**
+							- In the **sequence intended**
+							- Providing the **data intended**
+							- At the **time intended**
+
+							💡 Something enforced by code may still be an assumption **one level deeper**.
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## The Three Axes: Actors, Assets, Actions
+
+							**Actors**
+
+							One user, multi-role user, privileged, unprivileged, contracts, etc.
+
+							**Assets**
+
+							Multiple decimals, FoT tokens, Rebasing tokens, Double entrypoints, etc.
+
+							**Actions**
+
+							Unexpected edge-cases, unexpected sequencing
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Reversing Expectations
+
+							Rewrite every expectation as its **negation**:
+
+							> "We expect that…" → "We *don't* expect that…"
+
+							**Example:**
+							> "We expect that tokens will be 18 decimals"
+							→ "We don't expect that tokens won't be 18 decimals" ("Are the tokens/decimals enforced or assumed?")
+
+							Repeat for every expectations you can write down, this will populate the attack tree.
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Areas of Complexity and Path Branching
+
+							> *"Live bugs are usually simple. They hide in complex paths."* — Whitehatmage
+
+							Watch for:
+							- Loops · Delegatecalls · External calls
+							- Bytes/Strings manipulation · Assembly
+							- Try/Catch blocks
+							- Divisions/Subtractions · Downcasting
+
+							**Dynamic code** is where **AI/tools struggles the most** — it does well with what's in front of it, badly with what's invisible.
+
+							**Unexpected branches:** division rounding to `0`, subtraction underflow/revert, `bytes`/`string` mismatches, downcast overflow, empty loop skips, stale cached values, etc.
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Edge Cases — Symbolic Domain Enumeration
+
+							*The edge cases often forgotten by the happy paths.*
+
+							Use this as a **checklist** — not a silver bullet.
+
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Numeric (`uint` / `int`)
+
+							| Symbol | Risk |
+							|--------|------|
+							| `ZERO` | Skip conditions, div-by-zero, zeroed output |
+							| `ONE` | Precision loss, dust, minimum non-zero |
+							| `DUST` | Rounds to zero in calculations |
+							| `NEAR_MAX` | Overflow boundary |
+							| `MAX` | Overflow boundary |
+							| `EQUALS_THRESHOLD` | Fee BPS, precision multiplier, cap, deadline |
+							| `EQUALS_OTHER` | Aliasing with another variable |
+							| `NEGATIVE` (int) | `-1`, `INT_MIN`, sign extension on cast to uint |
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Address
+
+							| Symbol | Risk |
+							|--------|------|
+							| `ZERO` | Bypassing logic |
+							| `THIS` | `address(this)`, accounting errors, access control issues |
+							| `CALLER` | `msg.sender` combined with target role |
+							| `TOKEN_ADDR` | Tokens that lock when sent to themselves |
+							| `TRUSTED_CONTRACT` | Known protocol component |
+							| `ARBITRARY_CONTRACT` | Attacker-deployed, reentrancy, unexpected returns |
+							| `EQUALS_OTHER` | Aliasing with another variable |
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Array / Bytes
+
+							| Symbol | Risk |
+							|--------|------|
+							| `EMPTY` | Length 0 — skips loops, breaks assumptions |
+							| `SINGLETON` | Length 1 edge cases |
+							| `DUPLICATE` | Repeated elements → replay in loops |
+							| `MAX_LENGTH` | Gas exhaustion |
+							| `DESYNC` | Paired arrays of different lengths |
+							| `SPARSE` | Gaps/zeros at unexpected positions |
+							| `CRAFTED` | Attacker-controlled content (sig data, calldata) |
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Mapping / Struct / Time / Enum
+
+							**Mapping** — `DEFAULT_KEY` (returns 0, often misinterpreted), `OTHER_USER_KEY` (auth boundary bypass), `MY_KEY`
+
+							**Struct** — `PARTIAL_INIT`, `STATIC_OVERWRITE` (user overwrites admin fields), `INSUFFICIENT_DELETE`, `TOO_POWERFUL_DELETE`
+
+							**Time** — `PAST`, `FAR_FUTURE`, `EQUALS_NOW`, `EQUAL_TIME`, `EQUAL_TIME_MINUS_ONE`
+
+							**Enum** — `DEFAULT` (0, often uninitialized/invalid), `ANY`, `OVERFLOW` (`enum`s are `uint8`)
+
+							**Boolean** — `TRUE` / `FALSE`
+						</script>
+					</section>
+
+				</section>
+
+				<!-- ══════════════════ SECTION 5 ══════════════════ -->
+				<section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## 5. Where does the money go, and who decides how much is yours?
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Flow of Funds: Entry → Entitlement → Extraction (1/2)
+
+							**1. Funds enter** — A representation is computed and stored somewhere (the contract, a token contract)
+
+							**2. Entitlement is computed** — Some values stored, some priced at execution time
+
+							**3. Funds exit** — Amount read from entitlement, Tx is expected non-replayable
+
+							---
+
+							## Flow of Funds: Entry → Entitlement → Extraction (2/2)
+
+							Start from where **funds leave** the contract. Work backwards. You'll hit:
+
+							- **Accounting** — balances, shares, debt
+							- **Permissions** — who can trigger this
+							- **Unexpected flows** — reentrancy, weird logic paths
+							- **Shared state** — frontrunning, manipulation, missing access control or bound validation on another function
+							- **State machine gates** — replay protection
+
+							*Keep asking: "what needs to be true for this to be secure?"*
+						</script>
+					</section>
+
+				</section>
+
+				<!-- ══════════════════ SECTION 6 ══════════════════ -->
+				<section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## 6. Enough! I want Highs and Crits! Where do I start looking?
+
+							*Of course, you start from the **flow of funds**, then focus by sink type.*
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## The Sinks of Highs and Crits (1/2)
+
+							*In order of importance:*
+
+							🔴 **Theft Sinks** — Unauthorized fund extraction 🔴
+							- Transfers (tokens, ETH), minting, approval grants
+							- Trace back to: accounting, pricing, authorization, weird data flows (insufficient input validation, illegal state), weird control flows (reentrancy, logic jumps from casting or at 0)
+
+							🟠 **Lock Sinks** — Funds trapped permanently 🟠
+							- Shared state forced to always revert, checks or operations forceable to revert
+							- Arbitrary contract calls (gas bombs, deliberate reverts)
+							- On the flow of funds: any line that can revert with no rescue path
+
+							---
+
+							## The Sinks of Highs and Crits (2/2)
+
+							🟡 **Usurping Sinks** — Unauthorized authority/power acquisition 🟡
+							
+							- Voting power manipulation (e.g. flashloan + vote)
+							- Storage collision (e.g. via delegatecall)
+
+							🟣 **Free-Riding Sinks** — Economic benefit without cost/risk 🟣
+							- Fee bypasses
+							- Dilution attacks (e.g. share inflation)
+							- Slippage manipulation
+							- Guaranteed profit extraction
+						</script>
+					</section>
+
+				</section>
+
+				<!-- ══════════════════ SECTION 7 ══════════════════ -->
+				<section>
+
+					<section data-markdown>
+						<script type="text/template">
+								# 7. Why can't AI just do all this for us?
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## Analogy: Knife vs Gun
+
+							- Pure manual review = hunting with a **knife**
+							- Using AI = hunting with a **gun**
+							- You still need to **aim** — and ask the right questions
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## AI / Tool Limits
+
+							- Findings are **candidates** — with more or less confidence.
+							  - You may drown in false positives
+							  - Use multiple models. **Duplicates across models = high signal.**
+							  - Use other models to *disprove* findings (if they can!)
+							- **POCs can be fabricated** — Use multiple models and tools to stress test your scenarios
+							- AI struggles with **invisible / dynamic logic**
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## The Real Value Is Detection (1/2)
+
+							*In hindsight, all issues are understandable once they have a write-up. The real value is in **detection**.*
+
+							Detection requires:
+							1. A **mindset shift** — from "does it work?" to "what is needed for this to break?"
+							2. A **search strategy** — e.g. attack trees
+							3. Enumerating **assumptions** — understanding that more than intended might be possible
+							4. **Identifying hotspots** in the flow of funds — identifying sinks, identifying what an attacker can taint, identifying weird logic branches
+							5. **Stress-testing** security conditions — using tools or manual tracing
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+							## The Real Value Is Detection (2/2)
+
+							(Not reinventing the wheel): Great tweet from [0xCharlesWang](https://x.com/0xCharlesWang/status/2063295501441929422?s=20):
+
+							> Good security researchers use AI to aggressively explore codebases, map complex control flows, identify hidden execution paths, and reason through unhappy paths that are easy to miss manually. AI becomes powerful when it is used by someone who actually understands auditing, knows what to ask, and has a proper harness around the model.
+
+							> A strong researcher plus a strong model plus a strong audit workflow can absolutely find high-impact bugs. But without the researcher, without the methodology, and without the right setup, AI is just another tool producing noise.
+						</script>
+					</section>
+
+				</section>
+
+				<!-- ══════════════════ CONCLUSION ══════════════════ -->
+				<section data-markdown>
+					<script type="text/template">
+						## Conclusion
+
+						- **Some impactful bugs are hard to detect.**
+						- Detection depends on **how** and **where** you look at a piece of logic.
+						- How and where you look depends on your **mental model's ability to map hotspots** and construct attack ideas.
+						- Mapping hotspots and constructing ideas depends on your **understanding of what paths can be manipulated profitably**.
+						- What paths can be manipulated profitably depends on the **protocol's logic** and the **degrees of freedom** an attacker can mess with.
+
+						*Build attack trees. Question everything until the code breaks.*
+
+						***Thank you for your attention!***
+					</script>
+				</section>
+
 			</div>
 		</div>
 
@@ -29,13 +604,8 @@
 		<script src="dist/plugin/markdown.js"></script>
 		<script src="dist/plugin/highlight.js"></script>
 		<script>
-			// More info about initialization & config:
-			// - https://revealjs.com/initialization/
-			// - https://revealjs.com/config/
 			Reveal.initialize({
 				hash: true,
-
-				// Learn about plugins: https://revealjs.com/plugins/
 				plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
 			});
 		</script>
